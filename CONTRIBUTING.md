@@ -13,11 +13,9 @@ Before proposing a change:
 
 ```bash
 bash -n scripts/inspect.sh
-python3 scripts/show_evidence.py before
-python3 scripts/show_evidence.py after
 ```
 
-The evidence commands only print bundled reports. Do not run checks against someone else's server as part of a contribution.
+Do not run checks against someone else's server as part of a contribution.
 
 # 参与贡献
 
@@ -29,4 +27,4 @@ The evidence commands only print bundled reports. Do not run checks against some
 - 保持只读与授权变更边界；涉及对外说明时同步两版 README。
 - 说明实际验证和局限，不以语法检查推导零停机或万能恢复。
 
-提交前运行上面的本地命令即可；演示命令只打印仓库内的报告，不连接服务器。
+提交前运行上面的本地语法检查；未经授权，不要对他人的服务器执行检查或操作。

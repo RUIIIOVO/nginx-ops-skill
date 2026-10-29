@@ -15,27 +15,11 @@ The repository contains operating guidance and one optional read-only inspection
 - Design log rotation using Nginx log reopening, writer checks, compression verification, and an explicit retention policy.
 - Preserve container bind mount identities and distinguish SPA fallbacks from unintended application exposure.
 
-## Before and after
+## Demo
 
-The following terminal-style captures show **real, redacted metadata** from a server cleanup. The before view uses saved pre-change backup manifests; the after view uses a fresh read-only inspection. Host identifiers, login details, business filenames, and base paths were removed before rendering, and the identity row is visibly obscured.
+From mixed runtime files and historical backups to separate configuration, certificates, logs, and recovery directories.
 
-These are browser-rendered views of recorded command output, **not original desktop terminal screenshots**. They document one deployment; they are not a promise of identical results on other servers. Directory and log snapshots were taken at different times, as labeled.
-
-| Before | After |
-|---|---|
-| Runtime root contained 10 regular files | Runtime root contains only `nginx.conf` |
-| Active access log was 3.83 GiB | Active access log was 9.94 MiB at capture time; history is retained separately |
-| Mixed operating artifacts required cleanup | Active files, logs, backups, archives, and work areas have separate locations |
-
-### Before
-
-![Before cleanup: redacted backup-manifest report](assets/before.png)
-
-### After
-
-![After cleanup: redacted live-inspection report](assets/after.png)
-
-The smaller active log reflects **rotation**, not deletion or a storage reduction claim. The screenshot check did not perform rotation, certificate issuance, reloads, or deployment. See [evidence and redaction notes](docs/demo-evidence.md) and the [redacted measurements](assets/evidence.json).
+![Nginx directory layout before and after organization](assets/directory-layout.png)
 
 ## Installation
 
@@ -68,9 +52,7 @@ The script uses Bash, OpenSSH, and basic remote system tools. Docker checks requ
 SKILL.md                 Agent instructions and workflow
 references/              Focused operating guidance
 scripts/inspect.sh       Optional read-only inspection helper
-scripts/show_evidence.py Print the saved redacted demo reports
-assets/                  Redacted reports and terminal-style captures
-docs/                    Evidence provenance and contribution notes
+assets/                  Before-and-after directory diagram
 evals/evals.json         Example evaluation cases
 ```
 
@@ -79,10 +61,6 @@ evals/evals.json         Example evaluation cases
 Read-only requests stay read-only. Issuance, backup creation, rotation, reloads, deployment, and cleanup are separate actions that require authorization within the task. Existing server conventions take precedence over example paths, timestamps, and retention values.
 
 The workflow calls for backups and checks; it cannot guarantee zero downtime or automatic recovery on every deployment. A successful configuration check does not prove that all business routes work, and a reachable callback route does not prove a payment was processed.
-
-## Privacy
-
-This public edition excludes production environment profiles, real host addresses, private domains, local user paths, credentials, certificates, and conversation transcripts. Supply environment details locally when using the skill. Do not commit inspection output or backup artifacts containing sensitive information.
 
 ## Validation
 
