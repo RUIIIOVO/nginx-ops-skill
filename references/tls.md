@@ -1,5 +1,11 @@
 # SSL 自动签发与证书事务
 
+## 可运行脚本方案
+
+接入新系统或将已有流程参数化时，可使用 [ssl_manage.py](../scripts/ssl_manage.py)；配置、定时任务和操作步骤见 [中文说明](ssl-automation.zh-CN.md) / [English](ssl-automation.md)。适用范围是 Linux、RSA 证书组和支持原子目录交换的布局，其他环境先适配，不自动替换已有系统。
+
+自动任务使用 `reconcile`；用户明确要求提前补发才使用 `reissue`。优先检查 staging 是否已有可发布的新证书，避免无谓请求 CA。
+
 ## 接入现有系统
 
 先识别已有ACME客户端、CA、DNS/HTTP挑战方式、凭据来源、安装目标、定时任务及reload回调。不要为审查切换CA或重复创建续期任务；凭据不输出到聊天。

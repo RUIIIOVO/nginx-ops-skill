@@ -4,14 +4,14 @@
 
 一个面向 AI 编程助手的服务器 Nginx 运维技能，覆盖配置整理、虚拟主机隔离、TLS 证书自动化、日志轮转、备份恢复和变更验证，适用于原生与 Docker 部署。
 
-仓库提供操作方法和一个可选的只读检查脚本，不包含 Nginx 安装器、服务器创建流程，也不自带完整的生产证书管理器或部署平台。
+仓库提供操作方法、可选只读检查工具，以及调用现有 `acme.sh` 的可配置 Linux SSL 自动化脚本，不安装 Nginx 或创建服务器。
 
 ## 覆盖范围
 
 - 盘点真实运行服务、配置入口、挂载、定时任务和部署源。
 - 区分应用公开根、在线文件、备份、历史归档和工作目录。
 - 按校验备份、候选检查、平滑重载、前后对比的顺序实施变更。
-- 检查 ACME 签发、候选与线上证书一致性、自动续期和回滚条件。
+- 自动协调 ACME 候选、正常续期和显式补发，配合证书备份校验、原子发布与事务恢复。
 - 规划日志重开、旧文件写入检查、压缩校验和明确的保留策略。
 - 保护容器挂载根目录，区分 SPA 首页兜底与真实跨站文件暴露。
 
@@ -25,7 +25,7 @@
 
 将本目录复制到所使用助手支持的技能目录。助手需要支持带 YAML 元信息的 `SKILL.md`；如何发现与重新加载技能，以对应工具的文档为准。
 
-保持 `SKILL.md`、`references/` 和 `scripts/` 的相对位置不变。若宿主支持 `~/.agents/skills/`，可将本仓库复制或链接为 `~/.agents/skills/nginx-ops-skill`；其他宿主使用其文档规定的目录。覆盖已有安装前先检查内容。
+保持 `SKILL.md`、`references/`、`scripts/` 和 `examples/` 的相对位置不变。若宿主支持 `~/.agents/skills/`，可将本仓库复制或链接为 `~/.agents/skills/nginx-ops-skill`；其他宿主使用其文档规定的目录。覆盖已有安装前先检查内容。
 
 ## 使用
 
@@ -46,12 +46,32 @@ bash scripts/inspect.sh --ssh prod-web-2 --container nginx
 
 脚本依赖 Bash、OpenSSH 和远端基础系统工具。容器检查需要远端安装 Docker，并有权访问指定容器。脚本不会自动安装缺失工具。
 
+## SSL 自动化
+
+[脚本说明](references/ssl-automation.zh-CN.md)包含管理程序、[配置示例](examples/ssl/certificates.example.json)和[定时任务示例](examples/ssl/renew.cron)。
+
+```bash
+# 只读检查本地状态，不签发、不发布
+python3 scripts/ssl_manage.py plan --config /etc/nginx-ops/certificates.json
+
+# 正常定时协调：先发布已有新候选，再按到期条件续期
+python3 scripts/ssl_manage.py reconcile --config /etc/nginx-ops/certificates.json
+
+# 明确要求 CA 提前补发某个证书组
+python3 scripts/ssl_manage.py reissue --config /etc/nginx-ops/certificates.json --cert example.com
+```
+
+使用写命令前，按现场配置路径、DNS 插件、信任和 Nginx 命令。当前实现针对 Linux 原子目录交换和 RSA 证书组，区分候选与线上材料，校验证书对、备份旧版，并在平滑重载后验证源站 TLS。定时任务使用 `reconcile`，不默认强制补发。
+
 ## 仓库结构
 
 ```text
 SKILL.md                 技能入口与工作流程
 references/              按主题组织的操作参考
 scripts/inspect.sh       可选只读检查工具
+scripts/ssl_manage.py    可配置证书自动化程序
+examples/ssl/            证书登记和续期调度示例
+tests/                   SSL 流程隔离测试
 assets/                  目录整理前后对比图
 evals/evals.json         行为验证示例
 ```
@@ -66,6 +86,7 @@ evals/evals.json         行为验证示例
 
 ```bash
 bash -n scripts/inspect.sh
+python3 -m unittest discover -s tests -v
 ```
 
 行为验证案例用于说明预期，不代表完整基准测试，也不意味着适配所有助手宿主。

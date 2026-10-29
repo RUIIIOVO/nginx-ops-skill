@@ -1,0 +1,23 @@
+{
+  "nginx_root": "/srv/nginx",
+  "acme_home": "/opt/acme.sh",
+  "origin_address": "127.0.0.1",
+  "nginx_test_command": ["docker", "exec", "nginx", "nginx", "-t"],
+  "nginx_reload_command": ["docker", "exec", "nginx", "nginx", "-s", "reload"],
+  "dns_provider": "dns_ali",
+  "renew_before_days": 30,
+  "timezone_name": "Asia/Shanghai",
+  "timezone_offset": "+08:00",
+  "log_root": "/srv/nginx-logs",
+  "backup_root": "/srv/nginx-backups/cert",
+  "work_root": "/srv/nginx-work/ssl",
+  "lock_file": "/run/lock/nginx-ops-ssl.lock",
+  "certificates": {
+    "example.com": {
+      "names": ["example.com", "www.example.com"],
+      "ports": [443],
+      "certificate": "/srv/nginx/cert/example.com/fullchain.pem",
+      "private_key": "/srv/nginx/cert/example.com/privkey.pem"
+    }
+  }
+}

@@ -2,7 +2,7 @@
 name: nginx-ops-skill
 description: >-
   服务器 Nginx 配置盘点、架构整理与优化，覆盖原生/systemd和Docker部署、虚拟主机与路径隔离、
-  SSL自动签发续期及事务回滚、日志轮转与永久归档、备份恢复、发布和修改前后验证。
+  SSL自动签发、续期、补发及事务回滚，日志轮转与永久归档、备份恢复、发布和修改前后验证。
   用户要求检查或优化服务器Nginx、整理conf.d/html/cert/logs/backup、排查域名错配、
   证书未更新、日志过大，或规范部署脚本时使用。优先复用服务器现有机制，基于实测给方案并实施已授权改动。
   适用于不同服务器与部署方式；现场盘点后再选择目录、域名、工具和保留策略，不包含真实生产环境快照。
@@ -20,6 +20,7 @@ description: >-
 | 确认运行入口、目录、挂载和优化边界 | [discovery.md](references/discovery.md) |
 | 发布、备份、回退和前后对比 | [changes.md](references/changes.md) |
 | 自动签发、续期和证书一致性 | [tls.md](references/tls.md) |
+| 接入自动 SSL 脚本、补发与调度 | [ssl-automation.zh-CN.md](references/ssl-automation.zh-CN.md) / [English](references/ssl-automation.md) |
 | 轮转、压缩、归档和日志检索 | [logging.md](references/logging.md) |
 | 日期、权限、保留约定 | [conventions.md](references/conventions.md) |
 
@@ -52,6 +53,19 @@ description: >-
 读检查给出：当前结构和调用链、已确认问题/证据、未确认边界、推荐方案与具体修改范围。
 
 实施完成给出：行为变化、备份与回退位置、前后对比结果、未验证链路及待补充项。不要将TLS正常等同业务正常，将GET405等同支付成功，将同盘归档等同异地容灾。
+
+## 自动 SSL 脚本方案
+
+仓库提供 [ssl_manage.py](scripts/ssl_manage.py)、[配置示例](examples/ssl/certificates.example.json) 和 [定时任务示例](examples/ssl/renew.cron)。接入前读取双语脚本说明，现场核对 Linux、原子交换、证书目录和 ACME 条件。它是可配置参考实现，不自动迁移已稳定的证书系统。
+
+- `plan` / `status`：只读盘点，`status` 可核对源站 TLS。
+- `configure`：为已登记且已审阅的 ACME 证书配置 staging；拒绝直接接管已有线上安装目标或部署 hook，先备份并显式迁移。
+- `enroll --dry-run` / `enroll`：先预览，再准备新证书组；不生成业务路由。
+- `reconcile`：先发布已有有效新候选，再决定是否需要续期，适合定时执行。
+- `reissue`：明确的 CA 提前补发；仅在用户确有此意图时执行，不进默认定时任务。
+- `rollback`：按事务回退，与中断恢复共同保护证书对的一致性。
+
+不要把“线上证书没换”直接解释为“需要重新签发”；候选未发布、安装路径不对、证书对缺失与 CA 续期各自处理。当前参考实现以 RSA 证书组为边界，ECC/通配符或其他布局不默认套用。
 
 ## 只读辅助脚本
 

@@ -18,6 +18,18 @@
       "prompt": "日志文件已经几GB，我想本机全量保留，日期沿用现有备份格式。续期程序日志也检查一下，先给方案。",
       "expected_output": "核对实际落地、增长、调度和工具版本；提出重开、inode验证、压缩校验和明确保留范围；分清Nginx与续期任务日志，不直接执行或设置自动删除。",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "证书已经快到期了，我想接入你提供的自动补发脚本，但先只读看一下计划，不要向CA发请求。",
+      "expected_output": "读取SSL脚本接入说明，明确配置文件，使用plan或enroll --dry-run；区分已有候选未发布与正常续期，不运行reissue/reconcile，不默认向CA强制重签。",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "给example.com配置正常自动续期，另外告诉我真要提前补发时运行什么命令。不要包含DNS密钥。",
+      "expected_output": "使用通用配置和cron示例，定时仅reconcile；显式补发使用带--cert的reissue，说明staging/live分离、备份校验、发布验证和回滚，以及Linux/RSA适用条件。凭据外置，不输出真实环境。",
+      "files": []
     }
   ]
 }

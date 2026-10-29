@@ -4,14 +4,14 @@
 
 A reusable AI agent skill for inspecting and improving server Nginx deployments. It covers configuration layout, virtual host isolation, TLS certificate automation, log rotation, backups, and verified changes across native and Docker deployments.
 
-The repository contains operating guidance and one optional read-only inspection script. It does not install Nginx, provision servers, or include a production certificate manager or deployment platform.
+The repository contains operating guidance, an optional read-only inspection helper, and a configurable Linux SSL automation script for an existing `acme.sh` installation. It does not install Nginx or provision servers.
 
 ## What it covers
 
 - Discover the running service, actual configuration, mounts, scheduled jobs, and deployment sources.
 - Separate public application roots, active files, backups, archives, and working directories.
 - Plan changes around verified backups, candidate validation, graceful reloads, and before/after comparisons.
-- Check ACME issuance, candidate and live certificate consistency, renewal scheduling, and rollback requirements.
+- Automate ACME staging, normal renewal and explicit reissue with checksummed certificate backups, atomic publication and recovery records.
 - Design log rotation using Nginx log reopening, writer checks, compression verification, and an explicit retention policy.
 - Preserve container bind mount identities and distinguish SPA fallbacks from unintended application exposure.
 
@@ -25,7 +25,7 @@ From mixed runtime files and historical backups to separate configuration, certi
 
 Copy this directory into the skill directory supported by your agent. The agent must support `SKILL.md` with YAML frontmatter. Skill discovery and reload behavior depend on the host application; check its documentation.
 
-Keep `SKILL.md`, `references/`, and `scripts/` together. For a user-level installation in a host that reads `~/.agents/skills/`, copy or link the repository as `~/.agents/skills/nginx-ops-skill`. Use your host's documented directory if it differs; do not overwrite an existing installation without checking it first.
+Keep `SKILL.md`, `references/`, `scripts/`, and `examples/` together. For a user-level installation in a host that reads `~/.agents/skills/`, copy or link the repository as `~/.agents/skills/nginx-ops-skill`. Use your host's documented directory if it differs; do not overwrite an existing installation without checking it first.
 
 ## Usage
 
@@ -46,12 +46,32 @@ bash scripts/inspect.sh --ssh prod-web-2 --container nginx
 
 The script uses Bash, OpenSSH, and basic remote system tools. Docker checks require Docker on the target host and access to the specified container. The script does not install missing tools.
 
+## SSL automation
+
+The [SSL automation guide](references/ssl-automation.md) covers the included manager, [configuration example](examples/ssl/certificates.example.json) and [cron example](examples/ssl/renew.cron).
+
+```bash
+# Read local state without issuing or publishing
+python3 scripts/ssl_manage.py plan --config /etc/nginx-ops/certificates.json
+
+# Normal scheduled coordination: publish an existing newer candidate, then renew if due
+python3 scripts/ssl_manage.py reconcile --config /etc/nginx-ops/certificates.json
+
+# Explicit early CA reissue for one group
+python3 scripts/ssl_manage.py reissue --config /etc/nginx-ops/certificates.json --cert example.com
+```
+
+Configure paths, DNS plugin, trust and Nginx commands before using the write operations. The implementation targets Linux atomic directory exchange and RSA certificate groups. It keeps certificate candidates separate from live files, validates each pair, backs up the previous version and verifies origin TLS after a graceful reload. Timers use `reconcile`, not forced reissue.
+
 ## Repository layout
 
 ```text
 SKILL.md                 Agent instructions and workflow
 references/              Focused operating guidance
 scripts/inspect.sh       Optional read-only inspection helper
+scripts/ssl_manage.py    Configurable certificate automation
+examples/ssl/            Example registry and renewal schedule
+tests/                   Isolated SSL workflow tests
 assets/                  Before-and-after directory diagram
 evals/evals.json         Example evaluation cases
 ```
@@ -66,6 +86,7 @@ The workflow calls for backups and checks; it cannot guarantee zero downtime or 
 
 ```bash
 bash -n scripts/inspect.sh
+python3 -m unittest discover -s tests -v
 ```
 
 The evaluation cases describe expected agent behavior. They are examples, not an exhaustive benchmark or a claim of compatibility with every agent host.

@@ -1,0 +1,44 @@
+name: Checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Check inspection helper syntax
+        run: bash -n scripts/inspect.sh
+      - name: Run isolated certificate workflow tests
+        run: python -m unittest discover -s tests -v
+      - name: Exercise Linux directory exchange in a temporary directory
+        run: |
+          python - <<'PY'
+          import importlib.util
+          import tempfile
+          from pathlib import Path
+          spec = importlib.util.spec_from_file_location('ssl_manage', 'scripts/ssl_manage.py')
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          with tempfile.TemporaryDirectory() as temporary:
+              root = Path(temporary).resolve()
+              left, right = root / 'left', root / 'right'
+              left.mkdir()
+              right.mkdir()
+              (left / 'marker').write_text('previous')
+              (right / 'marker').write_text('candidate')
+              module.exchange_directories(left, right)
+              assert (left / 'marker').read_text() == 'candidate'
+              assert (right / 'marker').read_text() == 'previous'
+          PY

@@ -13,9 +13,10 @@ Before proposing a change:
 
 ```bash
 bash -n scripts/inspect.sh
+python3 -m unittest discover -s tests -v
 ```
 
-Do not run checks against someone else's server as part of a contribution.
+The SSL tests run with temporary files and mocks, without issuing certificates or reloading a server. Do not run checks against someone else's server as part of a contribution.
 
 # 参与贡献
 
@@ -27,4 +28,4 @@ Do not run checks against someone else's server as part of a contribution.
 - 保持只读与授权变更边界；涉及对外说明时同步两版 README。
 - 说明实际验证和局限，不以语法检查推导零停机或万能恢复。
 
-提交前运行上面的本地语法检查；未经授权，不要对他人的服务器执行检查或操作。
+提交前运行上面的本地检查。SSL 测试使用临时文件和 mock，不签发证书、不重载服务；未经授权，不要对他人的服务器执行检查或操作。

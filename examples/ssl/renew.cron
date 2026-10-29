@@ -1,0 +1,6 @@
+# Example only: adapt the executable/config/log paths before installation.
+# Root crontab uses the same schedule WITHOUT the "root" field.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+TZ=Asia/Shanghai
+58 4,10,16,22 * * * root /usr/bin/python3 /opt/nginx-ops-skill/scripts/ssl_manage.py reconcile --config /etc/nginx-ops/certificates.json >> /srv/nginx-logs/ssl-renew/cron.log 2>&1
