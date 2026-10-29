@@ -1,0 +1,21 @@
+BEFORE / recorded metadata
+Host / login / base path: [REDACTED]
+
+Layout snapshot: 2026-10-29 09:51:19 +08:00
+Log snapshot:    2026-10-29 11:03:10 +08:00
+
+<service-root>/nginx/
+  nginx.conf
+  conf.d/
+  html/
+  cert/
+  ssl/
+  scripts/
+  docs/
+  ... additional files at the runtime root
+
+Runtime root regular files: 10
+access.log: 4,116,509,197 bytes (3.83 GiB)
+
+Evidence: saved pre-change file manifests.
+This view does not execute a historical server state.

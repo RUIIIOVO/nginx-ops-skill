@@ -1,0 +1,25 @@
+# Local configuration and generated output
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.log
+*.tar
+*.tar.gz
+*.zip
+*.skill
+*.sqlite*
+*.db
+__pycache__/
+.DS_Store
+/private/
+/local/
+/reports/
+/backups/
+/inspection-output/
+/references/environments/
